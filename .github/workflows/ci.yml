@@ -1,0 +1,64 @@
+# .github/workflows/ci.yml
+name: CI - System Info App (Matrix Ubuntu/Windows)
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ${{ matrix.os }}  # Matrix: ubuntu-latest / windows-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]  # ТРЕБОВАНИЕ 1
+        java-version: [17]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ matrix.java-version }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ matrix.java-version }}
+          distribution: 'temurin'
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Run Tests (100% coverage)
+        run: ./gradlew test jacocoTestReport --no-daemon  # Тесты перед build (fail fast)
+
+      - name: Upload Test Reports
+        uses: actions/upload-artifact@v4
+        if: always()  # Загружаем даже при fail (для debug)
+        with:
+          name: test-reports-${{ matrix.os }}-${{ matrix.java-version }}
+          path: |
+            build/reports/tests/test/
+            build/reports/jacoco/test/html/
+          retention-days: 30
+
+      - name: Checkstyle Analysis (Fail if @Deprecated)
+        run: ./gradlew checkstyleMain  # ТРЕБОВАНИЕ 3: Fail build on violations
+
+      - name: Build with Gradle
+        run: ./gradlew build shadowJar --no-daemon  # Fat JAR
+
+      - name: Test Parsers (Run App)
+        run: ./gradlew run  # Тест парсеров на реальной ОС (Ubuntu/Windows)
+
+      - name: Publish JAR Artifact
+        uses: actions/upload-artifact@v4  # ТРЕБОВАНИЕ 2
+        with:
+          name: system-info-${{ matrix.os }}-${{ matrix.java-version }}.jar
+          path: build/libs/system-info-1.0.0.jar  # Fat JAR
+          retention-days: 30
