@@ -1,0 +1,104 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'checkstyle'
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
+    id 'jacoco'
+}
+
+group = 'com.systeminfo'
+version = '1.0.0'
+sourceCompatibility = '17'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.2'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.3'
+    testImplementation 'org.mockito:mockito-core:5.11.0'
+    testImplementation 'org.mockito:mockito-junit-jupiter:5.11.0'
+    testImplementation 'org.mockito:mockito-inline:4.11.0'
+}
+
+application {
+    mainClass = 'com.systeminfo.SystemInfoApp'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+checkstyle {
+    toolVersion = '10.12.0'
+    configFile = file('config/checkstyle/checkstyle.xml')
+    maxWarnings = 0
+}
+
+tasks.withType(Checkstyle).configureEach {
+    ignoreFailures = false
+    reports {
+        xml.required = true
+        html.required = true
+    }
+}
+
+shadowJar {
+    archiveClassifier = ''
+    mergeServiceFiles()
+    manifest {
+        attributes 'Main-Class': 'com.systeminfo.SystemInfoApp'
+    }
+}
+
+tasks.named('run') {
+    standardInput = System.in
+}
+
+//build.dependsOn shadowJar
+
+test {
+    useJUnitPlatform()
+}
+
+jacocoTestReport {
+    dependsOn test
+}
+
+// Фикс кодировки: UTF-8 для всех Java/Kotlin компиляций
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+// Зависимости для dist задач (решает ошибку implicit dependency)
+tasks.named('distTar') {
+    dependsOn shadowJar
+    from(project.shadowJar.archiveFile)
+    into("${project.name}-${project.version}")
+    archiveFileName = "${project.name}-${project.version}.tar"
+}
+
+tasks.named('distZip') {
+    dependsOn shadowJar
+    from(project.shadowJar.archiveFile)
+    into("${project.name}-${project.version}")
+    archiveFileName = "${project.name}-${project.version}.zip"
+}
+
+startScripts {
+    dependsOn shadowJar
+    // mainClass уже задан в application плагине
+}
+
+// Опционально: suppress warnings (уберёт deprecation)
+gradle.taskGraph.whenReady { graph ->
+    graph.allTasks.each { task ->
+        if (task.hasProperty('jvmArgs')) {
+            task.jvmArgs = task.jvmArgs.findAll { !it.contains('--add-opens') }
+        }
+    }
+}
