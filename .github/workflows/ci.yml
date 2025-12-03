@@ -33,4 +33,4 @@ jobs:
 
       # 10. Шаг 4: "run" - запускаем сборку и тесты
       - name: Build with Gradle
-        run: ./gradlew build -x checkstyleTest
+        run: ./gradlew build -PskipCheckstyleTest
