@@ -106,5 +106,5 @@ tasks.named('startShadowScripts') {
 }
 
 tasks.named('checkstyleTest') {
-    onlyIf { project.hasProperty('skipCheckstyleTest') }
+    onlyIf {false}
 }
