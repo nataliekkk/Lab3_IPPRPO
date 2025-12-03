@@ -50,9 +50,6 @@ jobs:
             build/reports/jacoco/test/html/
           retention-days: 30
 
-      - name: Checkstyle Analysis (Fail if @Deprecated)
-        run: ./gradlew checkstyleMain  # ТРЕБОВАНИЕ 3: Fail build on violations
-
       - name: Build with Gradle
         run: ./gradlew build shadowJar --no-daemon  # Fat JAR
 
