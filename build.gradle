@@ -102,3 +102,7 @@ gradle.taskGraph.whenReady { graph ->
         }
     }
 }
+
+tasks.named('startShadowScripts') {
+    dependsOn tasks.named('jar') // можно использовать также inputs.files или mustRunAfter
+}
