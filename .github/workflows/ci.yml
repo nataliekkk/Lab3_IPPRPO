@@ -40,6 +40,9 @@ jobs:
       
       - name: Build with Gradle
         run: ./gradlew build -x checkstyleMain --info
+        
+      - name: Test Parsers (Run App)
+        run: ./gradlew run  # Тест парсеров на реальной ОС (Ubuntu/Windows)
 
       - name: Publish JAR Artifact
         uses: actions/upload-artifact@v4
