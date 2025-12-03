@@ -59,8 +59,6 @@ tasks.named('run') {
     standardInput = System.in
 }
 
-//build.dependsOn shadowJar
-
 test {
     useJUnitPlatform()
 }
@@ -70,9 +68,9 @@ jacocoTestReport {
 }
 
 // Фикс кодировки: UTF-8 для всех Java/Kotlin компиляций
-tasks.withType(JavaCompile) {
-    options.encoding = 'UTF-8'
-}
+//tasks.withType(JavaCompile) {
+    //options.encoding = 'UTF-8'
+//}
 
 // Зависимости для dist задач (решает ошибку implicit dependency)
 tasks.named('distTar') {

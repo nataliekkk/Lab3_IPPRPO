@@ -1,3 +1,4 @@
+# Игнорируем Gradle
 .gradle
 build/
 !gradle/wrapper/gradle-wrapper.jar
@@ -40,3 +41,12 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+
+# Игнорируем файл конфигурации приложения
+app.properties
+
+# Игнорировать прочие файлы и директории, которые не относятся к исходному коду
+*.class
+*.log
+*.tmp
+*.bak
