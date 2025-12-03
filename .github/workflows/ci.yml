@@ -34,6 +34,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
+      - name: Set execute permissions for gradlew  # Устанавливаем права на выполнение
+        run: chmod +x ./gradlew
+
       - name: Run Tests (100% coverage)
         run: ./gradlew test jacocoTestReport --no-daemon  # Тесты перед build (fail fast)
 
